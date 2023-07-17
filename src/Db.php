@@ -24,7 +24,7 @@ class Db
         }
     }
 
-    public function execute($sql)
+    public function execute($sql): mysqli_result|bool
     {
         $result = mysqli_query($this->conn, $sql);
 

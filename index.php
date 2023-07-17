@@ -16,6 +16,8 @@ if ($request->is_empty()) {
     exit;
 }
 
+echo $request->text;
+
 $response = new Response($request);
 $response->generate();
 //$response->send();

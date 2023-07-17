@@ -36,7 +36,10 @@ class Request
                     'type' => 'private'
                 ],
                 'date' => '1688905553',
-                'text' => '/mood_chart'
+//                'text' => '/mood_chart'
+//                'text' => '/help'
+                'text' => '/scale'
+//                'text' => 'Сегодня'
             ]
         ];
 
@@ -46,11 +49,18 @@ class Request
         $this->last_name = $data['message']['from']['last_name'];
         $this->text = trim($data['message']['text']);
         $this->text_array = explode(" ", $this->text);
+
+        $this->log($data);
     }
 
     public function is_empty()
     {
         //todo предусмлтреть картинки и т.д.
         return empty($this->text);
+    }
+
+    private function log($data)
+    {
+        file_put_contents(__DIR__ . '/../log.php', print_r($data, true), FILE_APPEND);
     }
 }
