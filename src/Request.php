@@ -4,12 +4,12 @@ namespace Builov\MashaBot;
 
 class Request
 {
-    public $chat_id;
-    public $user_name;
-    public $first_name;
-    public $last_name;
-    public $text;
-    public $text_array;
+    public mixed $chat_id;
+    public mixed $user_name;
+    public mixed $first_name;
+    public mixed $last_name;
+    public string $text;
+    public array $text_array;
 
     function __construct()
     {
@@ -40,6 +40,7 @@ class Request
 //                'text' => '/help'
                 'text' => '/scale'
 //                'text' => 'Сегодня'
+//                'text' => 'Нормальное настроение. Спокойный, сбалансированный настрой.'
             ]
         ];
 
@@ -53,13 +54,13 @@ class Request
         $this->log($data);
     }
 
-    public function is_empty()
+    public function is_empty(): bool
     {
         //todo предусмлтреть картинки и т.д.
         return empty($this->text);
     }
 
-    private function log($data)
+    private function log($data): void
     {
         file_put_contents(__DIR__ . '/../log.php', print_r($data, true), FILE_APPEND);
     }

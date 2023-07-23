@@ -12,5 +12,8 @@
             "email": "builov@inbox.ru"
         }
     ],
-    "require": {}
+    "require": {
+      "ext-mysqli": "*",
+      "ext-curl": "*"
+    }
 }

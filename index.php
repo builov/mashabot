@@ -1,6 +1,7 @@
 <?php
 use Builov\MashaBot\Db;
 use Builov\MashaBot\Request;
+use Builov\MashaBot\RequestProcessor;
 use Builov\MashaBot\Response;
 
 require 'vendor/autoload.php';
@@ -16,10 +17,17 @@ if ($request->is_empty()) {
     exit;
 }
 
-echo $request->text;
+//echo $request->text;
 
-$response = new Response($request);
-$response->generate();
+$rp = new RequestProcessor($request);
+$response = $rp->process();
+
+//var_dump($response->message->properties); exit;
+
+try {
+    $response->send();
+} catch (Exception $e) {
+}
 //$response->send();
 
 

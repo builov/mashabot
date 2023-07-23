@@ -3,6 +3,7 @@
 namespace Builov\MashaBot;
 
 use mysqli;
+use mysqli_result;
 
 class Db
 {
@@ -26,12 +27,10 @@ class Db
 
     public function execute($sql): mysqli_result|bool
     {
-        $result = mysqli_query($this->conn, $sql);
-
-        return $result;
+        return mysqli_query($this->conn, $sql);
     }
 
-    public function close()
+    public function close(): void
     {
         $this->conn->close();
     }
