@@ -38,8 +38,8 @@ class Request
                 'date' => '1688905553',
 //                'text' => '/mood_chart'
 //                'text' => '/help'
-                'text' => '/scale'
-//                'text' => 'Сегодня'
+//                'text' => '/scale'
+                'text' => 'Сегодня'
 //                'text' => 'Нормальное настроение. Спокойный, сбалансированный настрой.'
             ]
         ];
@@ -56,12 +56,17 @@ class Request
 
     public function is_empty(): bool
     {
-        //todo предусмлтреть картинки и т.д.
+        //todo предусмотреть картинки и т.д.
         return empty($this->text);
     }
 
     private function log($data): void
     {
         file_put_contents(__DIR__ . '/../log.php', print_r($data, true), FILE_APPEND);
+    }
+
+    public function getDateTextValues(): array
+    {
+        return DiaryEntryDate::$textValues;
     }
 }

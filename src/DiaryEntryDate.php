@@ -4,16 +4,18 @@ namespace Builov\MashaBot;
 
 class DiaryEntryDate
 {
-    public array $values = [
+    public static array $textValues = [
         'Сегодня',
         'Вчера',
         'Позавчера',
         'Другая дата'
     ];
 
-    function __construct()
-    {
+    public static int $keyboardColumns = 2;
 
+    public static function getTextValues()
+    {
+        return self::$textValues;
     }
 
 }

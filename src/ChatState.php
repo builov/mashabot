@@ -15,26 +15,34 @@ class ChatState
     private Message $message;
 
 
-    function __construct($bot_message)
+    function __construct($message)
     {
-        $this->message = new Message($bot_message);
+        $this->message = $message;
     }
 
-    public function save()
+    public function save(): \mysqli_result|bool
     {
+//        var_dump($this->message); exit;
+
+        $state = array_search($this->message->properties['set_state'], self::$chat_states);
+
         $db = new Db();
-        $sql = (isset($this->diary_date))
+        $sql = (isset($this->date))
             ? "INSERT INTO `chat_state` (`user_id`, `status_id`, `diary_date`)
-                VALUES ('{$this->request->chat_id}', $state, '$this->diary_date')
-                ON DUPLICATE KEY UPDATE `status_id` = $state, `diary_date` = '$this->diary_date'"
+                VALUES ('{$this->message->request->chat_id}', $state, '{$this->date}')
+                ON DUPLICATE KEY UPDATE `status_id` = $state, `diary_date` = '{$this->date}'"
             : "INSERT INTO `chat_state` (`user_id`, `status_id`) 
-                VALUES ('{$this->request->chat_id}', $state)";
+                VALUES ('{$this->message->request->chat_id}', $state)";
         return $db->execute($sql);
     }
 
-    public function check()
+    public function check(): bool
     {
-        return isset($state_data['status_id']) && $this->chat_states[$state_data['status_id']] == $state;
+        $pending_state = array_search($this->message->properties['pending_state'], self::$chat_states);
+
+        echo $pending_state; exit;
+
+        return isset($state_data['status_id']) && $this->chat_states[$state_data['status_id']] == $pending_state;
     }
 
     public function clear()
@@ -44,10 +52,10 @@ class ChatState
         return $db->execute($sql);
     }
 
-    public function get($chat_id): array|false|null
+    public function get(): array|false|null
     {
         $db = new Db();
-        $sql = "SELECT `status_id`, `diary_date` FROM `chat_state` WHERE `user_id` = $chat_id";
+        $sql = "SELECT `status_id`, `diary_date` FROM `chat_state` WHERE `user_id` = {$this->message->request->chat_id}";
 
         if ($result = $db->execute($sql)) {
             return mysqli_fetch_assoc($result);

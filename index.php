@@ -9,9 +9,6 @@ require 'config.php';
 
 header('Content-Type: text/html; charset=utf-8');
 
-/**
- * получение данных из чата
- */
 $request = new Request();
 if ($request->is_empty()) {
     exit;
@@ -28,7 +25,7 @@ try {
     $response->send();
 } catch (Exception $e) {
 }
-//$response->send();
+
 
 
 

@@ -4,57 +4,58 @@ namespace Builov\MashaBot;
 
 class RequestProcessor
 {
-//    private Request $request;
-
     private Message $message;
+    private ChatState $chatState;
+
 
     /**
      * @param Request $request
      */
-    function __construct($request)
+    function __construct(Request $request)
     {
-//        $this->request = $request;
-
         $this->message = new Message($request);
-
-//        var_dump($this->message);
     }
 
-
+    /**
+     * @throws \Exception
+     */
     public function process(): Response
     {
         /**
+         * Получение кнопок для ответа
+         */
+        if (isset($this->message->properties['reply_markup']['keyboard'])) {
+            $method_name = $this->message->properties['reply_markup']['keyboard'];
+
+            $keyboard = new Keyboard();
+            $this->message->properties['reply_markup']['keyboard'] = $keyboard->$method_name();
+        }
+
+        /**
          * Проверка ожидаемого состояния и установка даты дневника
          */
-//        $this->chat_state = new ChatState($this->message);
+        $this->chatState = new ChatState($this->message);
 
-//        if (isset($bot_message['pending_state'])) {
-//            $state_data = $this->get_state();
-//
-//            if ($this->check_state($bot_message['pending_state'], $state_data)) {
-//                $this->diary_date = $state_data['diary_date'] ?? '';
-//            } else {
-//                //todo вернуться к началу. Например: "Попробуем еще раз?"
-//                echo "Попробуем еще раз?";
-//                exit;
-//            }
-//        }
+        if (isset($this->message->properties['pending_state'])) {
+            if (!$current_state = $this->chatState->get()) {
+                throw new \Exception('Отсутствует ожидаемое состояние');
+            }
+
+//            var_dump($current_state); exit;
+
+            if ($this->chatState->check()) {
+                $this->diary_date = $state_data['diary_date'] ?? '';
+            } else {
+                //todo вернуться к началу. Например: "Попробуем еще раз?"
+                echo "Попробуем еще раз?";
+                exit;
+            }
+        }
 
         /**
          * Генерация ответа
          */
-//        $response['data'] = [
-//            'chat_id' => $this->message->request->chat_id
-//        ];
-//        if (isset($this->message->properties['reply_markup'])) {
-//            $response['data']['reply_markup'] = (is_array($this->message->properties['reply_markup']))
-//                ? json_encode($this->message->properties['reply_markup'])
-//                : $this->message->properties['reply_markup'];
-//        }
-//        $response['data']['parse_mode'] = (isset($this->message->properties['parse_mode'])) ? $this->message->properties['parse_mode'] : null;
-//        $response['data']['text'] = (isset($this->message->properties['response_text'])) ? $this->message->properties['response_text'] : null;
-//        $response['data']['photo'] = (isset($this->message->properties['response_image'])) ? curl_file_create(__DIR__ . '/../' . $this->message->properties['response_image']) : null;
-//        $response['type'] = $this->message->properties['response_type'];
+        $response = new Response($this->message);
 
         /**
          * Выполнение действия, связанного с обработкой сообщения
@@ -68,11 +69,9 @@ class RequestProcessor
         /**
          * Установка состояния
          */
-//        if (isset($bot_message['set_state'])) {
-//            $state = array_search($bot_message['set_state'], ChatState::$chat_states);
-//
-//            $this->chat_state->save();
-//        }
+        if (isset($this->message->properties['set_state'])) {
+            $this->chatState->save();
+        }
 
         /**
          * Очистка состояния
@@ -83,11 +82,7 @@ class RequestProcessor
 //            $this->set_state($state);
 //        }
 
-        /**
-         * Отправка ответа
-         */
-//        $this->send($bot_message['response_type'], $response);
 
-        return new Response($this->message);
+        return $response;
     }
 }

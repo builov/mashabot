@@ -3,6 +3,7 @@
 namespace Builov\MashaBot;
 
 use Builov\MashaBot\Request;
+use Builov\MashaBot\DiaryEntryDate;
 
 class Message
 {
@@ -33,46 +34,25 @@ class Message
             'response_type' => 'text',
             'response_text' => 'За какой день?',
             'reply_markup' => [
-                'keyboard' => [
-//                        [
-//                            ['text' => $this->date_values[0]],
-//                            ['text' => $this->date_values[1]]
-//                        ],
-//                        [
-//                            $this->date_values[2],
-//                            ['text' => $this->date_values[3]]
-//                        ]
-                ],
+                'keyboard' => 'getDates', //метод класса Keyboard
                 'resize_keyboard' => true,
                 'one_time_keyboard' => true,
             ],
             'parse_mode' => 'HTML',
             'set_state' => 'pending_date'
         ],
-//            [
-//                'request' => $this->date_values,
-//                'response_type' => 'text',
-//                'response_text' => 'Как настроение?',
-//                'reply_markup' => [
-//                    'keyboard' => [
-//                        [['text' => $this->moods[10]]],
-//                        [['text' => $this->moods[9]]],
-//                        [['text' => $this->moods[8]]],
-//                        [['text' => $this->moods[7]]],
-//                        [['text' => $this->moods[6]]],
-//                        [['text' => $this->moods[5]]],
-//                        [['text' => $this->moods[4]]],
-//                        [['text' => $this->moods[3]]],
-//                        [['text' => $this->moods[2]]],
-//                        [['text' => $this->moods[1]]],
-//                        [['text' => $this->moods[0]]]
-//                    ]
-//                ],
-//                'parse_mode' => 'HTML',
-//                'action' => 'set_date',
-//                'pending_state' => 'pending_date',
-//                'set_state' => 'pending_mood'
-//            ],
+            [
+                'request' => ['getDateTextValues'], //метод класса Request
+                'response_type' => 'text',
+                'response_text' => 'Как настроение?',
+                'reply_markup' => [
+                    'keyboard' => 'getMoods',   //метод класса Keyboard
+                ],
+                'parse_mode' => 'HTML',
+                'action' => 'set_date',
+                'pending_state' => 'pending_date',
+                'set_state' => 'pending_mood'
+            ],
 //            [
 //                'request' => $this->moods,
 //                'response_type' => 'text',
@@ -92,16 +72,18 @@ class Message
      */
     function __construct($request)
     {
-//        var_dump($request); exit;
-
         $this->request = $request;
-//        var_dump($this->request);
-//        exit;
 
         /**
          * Определение сообщения
          */
         foreach ($this->messages as $key => $message) {
+            if (is_array($message['request'])) {
+                $method = $message['request'][0];
+
+                $message['request'] = $this->request->$method();
+            }
+
             if ((!is_array($message['request']) && $this->request->text == $message['request'])
                 || (is_array($message['request']) && in_array($this->request->text, $message['request']))) {
                 $this->properties = $this->messages[$key];
@@ -114,8 +96,5 @@ class Message
         if (!isset($this->properties)) {
             $this->properties = $this->messages[0];
         }
-
-//        exit;
-
     }
 }

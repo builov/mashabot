@@ -7,47 +7,45 @@ use Exception;
 class Response
 {
     public Message $message;
-//    private array $bot_messages;
-//    private string $diary_date;
     private ChatState $chat_state;
+    /** @var array состав определяется API Telegram */
+    private array $postfields;
+    /** @var array состав определяется API Telegram */
+    private array $content_types = [
+        'text' => 'sendMessage',
+        'image' => 'sendPhoto'
+    ];
 
     function __construct($message)
     {
-        var_dump($message); exit;
-
         $this->message = $message;
-
-        $response['data'] = [
-            'chat_id' => $this->message->request->chat_id
-        ];
-        if (isset($this->message->properties['reply_markup'])) {
-            $response['data']['reply_markup'] = (is_array($this->message->properties['reply_markup']))
-                ? json_encode($this->message->properties['reply_markup'])
-                : $this->message->properties['reply_markup'];
-        }
-        $response['data']['parse_mode'] = (isset($this->message->properties['parse_mode'])) ? $this->message->properties['parse_mode'] : null;
-        $response['data']['text'] = (isset($this->message->properties['response_text'])) ? $this->message->properties['response_text'] : null;
-        $response['data']['photo'] = (isset($this->message->properties['response_image'])) ? curl_file_create(__DIR__ . '/../' . $this->message->properties['response_image']) : null;
-        $response['type'] = $this->message->properties['response_type'];
     }
 
     public function send(): void
     {
-        $content_types = [
-            'text' => 'sendMessage',
-            'image' => 'sendPhoto'
+        $this->postfields = [
+            'chat_id' => $this->message->request->chat_id
         ];
+        if (isset($this->message->properties['reply_markup'])) {
+            $this->postfields['reply_markup'] = (is_array($this->message->properties['reply_markup']))
+                ? json_encode($this->message->properties['reply_markup'])
+                : $this->message->properties['reply_markup'];
+        }
+//        $this->postfields['reply_markup'] = '';
+        $this->postfields['parse_mode'] = (isset($this->message->properties['parse_mode'])) ? $this->message->properties['parse_mode'] : null;
+        $this->postfields['text'] = (isset($this->message->properties['response_text'])) ? $this->message->properties['response_text'] : null;
+        $this->postfields['photo'] = (isset($this->message->properties['response_image'])) ? curl_file_create(__DIR__ . '/../' . $this->message->properties['response_image']) : null;
 
-//        var_dump($this->message->properties);
+        print_r($this->postfields);
 
         $ch = curl_init();
         $ch_post = [
-            CURLOPT_URL => 'https://api.telegram.org/bot' . BOT_TOKEN . '/' . $content_types[$this->message->properties['type']],
+            CURLOPT_URL => 'https://api.telegram.org/bot' . BOT_TOKEN . '/' . $this->content_types[$this->message->properties['response_type']],
             CURLOPT_POST => TRUE,
             CURLOPT_RETURNTRANSFER => TRUE,
             CURLOPT_TIMEOUT => 10,
 //        CURLOPT_HEADER => false,
-            CURLOPT_POSTFIELDS => $this->message->properties['data']
+            CURLOPT_POSTFIELDS => $this->postfields
         ];
 
         curl_setopt_array($ch, $ch_post);
