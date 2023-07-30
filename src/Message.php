@@ -9,6 +9,8 @@ class Message
 {
     public array $properties;
     public Request $request;
+    public ChatState $chatState;
+    public string $diaryDate;
     public array $messages = [
         [
             'request' => '',
@@ -39,7 +41,7 @@ class Message
                 'one_time_keyboard' => true,
             ],
             'parse_mode' => 'HTML',
-            'set_state' => 'pending_date'
+            'set_state' => 'pending_date'   //свойства класса ChatState
         ],
             [
                 'request' => ['getDateTextValues'], //метод класса Request
@@ -49,35 +51,64 @@ class Message
                     'keyboard' => 'getMoods',   //метод класса Keyboard
                 ],
                 'parse_mode' => 'HTML',
-                'action' => 'set_date',
-                'pending_state' => 'pending_date',
-                'set_state' => 'pending_mood'
+                'action' => 'setDate',  //метод класса RequestProcessor
+                'pending_state' => 'pending_date',  //свойства класса ChatState
+                'set_state' => 'pending_mood'       //свойства класса ChatState
             ],
+            [
+                'request' => ['getMoodTextValues'], //метод класса Request
+                'response_type' => 'text',
+                'response_text' => 'Спасибо, записано. Заходи еще!',
+                'reply_markup' => [
+                    "remove_keyboard" => true
+                ],
+                'parse_mode' => 'HTML',
+                'action' => 'saveMood',     //метод класса RequestProcessor
+                'pending_state' => 'pending_mood',  //свойства класса ChatState
+                'clear_state' => true
+            ],
+
+
 //            [
-//                'request' => $this->moods,
+//                'request' => [1,2,3,4,5],
 //                'response_type' => 'text',
-//                'response_text' => 'Спасибо, записано. Заходи еще!',
+//                'response_text' => '', //метод класса Request
 //                'reply_markup' => [
 //                    "remove_keyboard" => true
 //                ],
 //                'parse_mode' => 'HTML',
-//                'action' => 'save_mood',
-//                'pending_state' => 'pending_mood',
-//                'clear_state' => true
+//                'action' => 'saveMood',     //метод класса RequestProcessor
+//                'pending_state' => 'pending_mood',  //свойства класса ChatState
+//                'set_state' => 'pending_mood'       //свойства класса ChatState
+////                'clear_state' => true
 //            ]
     ];
 
     /**
-     * @param Request $request
+     * @param ChatState $chatState
      */
-    function __construct($request)
+    function __construct($chatState)
     {
-        $this->request = $request;
+        $this->chatState = $chatState;
+        $this->request = $chatState->request;
 
         /**
          * Определение сообщения
          */
         foreach ($this->messages as $key => $message) {
+            /** числовые ответы */
+            if (in_array($this->request->text, [1,2,3,4,5])) {
+                $this->properties['request'] = $this->request->text;
+                $this->properties['response_type'] = 'text';
+                $this->properties['response_text'];
+                $this->properties['reply_markup'] = '';
+                $this->properties['parse_mode'] = 'HTML';
+
+
+
+                return;
+            }
+
             if (is_array($message['request'])) {
                 $method = $message['request'][0];
 

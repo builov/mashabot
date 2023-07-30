@@ -6,7 +6,7 @@ class Keyboard
 {
     public function getDates(): array
     {
-        return array_chunk(DiaryEntryDate::$textValues, DiaryEntryDate::$keyboardColumns, false);
+        return array_chunk(DiaryEntryDate::getTextValues(), DiaryEntryDate::$keyboardColumns, false);
     }
 
     public function getMoods(): array

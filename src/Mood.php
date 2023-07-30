@@ -19,9 +19,28 @@ class Mood
     ];
 
     public static int $keyboardColumns = 1;
+    public int $user_id;
+    public string $date;
+    public int $value;
 
-    function __construct()
+    function __construct(int $user_id, string $date, string $value)
     {
+        $this->user_id = $user_id;
+        $this->date = $date;
+        $this->value = array_search($value, self::$values);
+    }
 
+    public function save(): \mysqli_result|bool
+    {
+//        var_dump($this->message); exit;
+
+        $ts = time();
+        $indicator_id = 1;  //БД таблица 'indicator'
+
+        $db = new Db();
+        $sql = "INSERT INTO `diary` (`record_date`, `user_id`, `indicator_id`, `indicator_value`, `ts`) 
+                VALUES ('$this->date', {$this->user_id}, $indicator_id, $this->value, $ts) 
+                ON DUPLICATE KEY UPDATE `indicator_value` = $this->value, `ts` = $ts";
+        return $db->execute($sql);
     }
 }

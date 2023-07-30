@@ -2,8 +2,11 @@
 
 namespace Builov\MashaBot;
 
+use Exception;
+
 class RequestProcessor
 {
+    private Request $request;
     private Message $message;
     private ChatState $chatState;
 
@@ -13,7 +16,9 @@ class RequestProcessor
      */
     function __construct(Request $request)
     {
-        $this->message = new Message($request);
+        $this->request = $request;
+        $this->chatState = new ChatState($request);
+        $this->message = new Message($this->chatState);
     }
 
     /**
@@ -32,23 +37,14 @@ class RequestProcessor
         }
 
         /**
-         * Проверка ожидаемого состояния и установка даты дневника
+         * Проверка ожидаемого состояния
          */
-        $this->chatState = new ChatState($this->message);
+
 
         if (isset($this->message->properties['pending_state'])) {
-            if (!$current_state = $this->chatState->get()) {
+            if (!$this->chatState->check($this->message)) {
                 throw new \Exception('Отсутствует ожидаемое состояние');
-            }
-
-//            var_dump($current_state); exit;
-
-            if ($this->chatState->check()) {
-                $this->diary_date = $state_data['diary_date'] ?? '';
-            } else {
                 //todo вернуться к началу. Например: "Попробуем еще раз?"
-                echo "Попробуем еще раз?";
-                exit;
             }
         }
 
@@ -60,29 +56,46 @@ class RequestProcessor
         /**
          * Выполнение действия, связанного с обработкой сообщения
          */
-//        if (isset($bot_message['action'])) {
-//            $name = $bot_message['action'];
-//
-//            $this->$name();
-//        }
+        if (isset($this->message->properties['action'])) {
+            $name = $this->message->properties['action'];
+
+            $this->$name();
+        }
 
         /**
          * Установка состояния
          */
         if (isset($this->message->properties['set_state'])) {
-            $this->chatState->save();
+            $this->chatState->save($this->message);
         }
 
         /**
          * Очистка состояния
          */
-//        if (isset($bot_message['clear_state'])) {
-//            $state = array_search($bot_message['set_state'], $this->chat_states);
-//
-//            $this->set_state($state);
-//        }
-
+        if (isset($this->message->properties['clear_state'])) {
+            $this->chatState->clear();
+        }
 
         return $response;
+    }
+
+    /**
+     * @throws \Exception
+     */
+    private function setDate(): void
+    {
+        if (in_array($this->message->request->text, DiaryEntryDate::getTextValues())) {
+            $this->message->diaryDate = $this->chatState->date = DiaryEntryDate::getDateFormatted($this->message->request->text);
+        }
+    }
+
+    private function saveMood(): void
+    {
+//        var_dump($this->chatState); exit;
+
+        $mood = new Mood($this->message->request->chat_id, $this->chatState->date, $this->message->request->text);
+        if (!$mood->save()) {
+            throw new Exception();
+        }
     }
 }

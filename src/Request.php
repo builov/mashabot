@@ -39,7 +39,7 @@ class Request
 //                'text' => '/mood_chart'
 //                'text' => '/help'
 //                'text' => '/scale'
-                'text' => 'Сегодня'
+//                'text' => 'Сегодня'
 //                'text' => 'Нормальное настроение. Спокойный, сбалансированный настрой.'
             ]
         ];
@@ -67,6 +67,11 @@ class Request
 
     public function getDateTextValues(): array
     {
-        return DiaryEntryDate::$textValues;
+        return DiaryEntryDate::getTextValues();
+    }
+
+    public function getMoodTextValues(): array
+    {
+        return Mood::$values;
     }
 }
